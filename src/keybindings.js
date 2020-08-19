@@ -79,6 +79,7 @@ function generateKeybinds(keybindings) {
   // NOTE(john): for now we can just do this the dumb way
   function handler(e) {
     const kbs = keybindings
+          .filter(kb => kb.keys)
           .filter(kb => isKey(kb.keys, e));
     if (!kbs || kbs.length === 0) {
       // console.log(e, kbs);
@@ -86,7 +87,7 @@ function generateKeybinds(keybindings) {
     }
 
     const k = kbs[0];
-    console.log(k);
+    // console.log(k);
     if (!k.hasOwnProperty('only') || k.only()) {
       k.action();
       e.preventDefault();
