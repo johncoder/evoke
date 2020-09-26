@@ -1,6 +1,7 @@
 import React, {useState, useRef} from 'react';
 import {generateKeybinds, useEventListener} from './keybindings';
 import './App.css';
+import TextEditor from './TextEditor.js';
 
 function App() {
   const [count, setCount] = useState(0);
@@ -112,20 +113,17 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
+        <div>
+          <TextEditor/>
+        </div>
+
         {panelVisible &&
          <p>
-          Hello, world! {count}
+           Hello, world! {count}
          </p>
         }
         {functionSelectVisible && fnSelect}
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Experience React
-        </a>
+        <div>My app</div>
       </header>
     </div>
   );

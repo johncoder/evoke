@@ -1,36 +1,10 @@
-import { useEffect, useRef } from 'react';
+import useEventListener from './use-event-listener.js';
 
 /*
 a keybindings module that:
 + allows components to publish functions
 + allows components to associate keybindings to functions
 */
-
-function useEventListener(eventName, handler, element = window) {
-  const savedHandler = useRef();
-  useEffect(() => {
-    savedHandler.current = handler;
-  }, [handler]);
-
-  useEffect(
-    () => {
-      const isSupported = element && element.addEventListener;
-      if (!isSupported) {
-        return () => {
-        };
-      }
-
-      const eventListener = event => savedHandler.current(event);
-
-      element.addEventListener(eventName, eventListener);
-
-      return () => {
-        element.removeEventListener(eventName, eventListener);
-      };
-    },
-    [eventName, element]
-  );
-}
 
 function createTrieNode(key, terminate, children) {
   return {
