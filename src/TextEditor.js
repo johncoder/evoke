@@ -41,16 +41,43 @@ function renderLinesAndCursor(content, ref) {
     currentLine.push((<span key={`text-cursor-end`} className="texteditor-cursor">&nbsp;</span>));
   }
   lines.push(currentLine);
-  return lines; // .map((l, i) => {return <div>{l||' '}</div>;});
+  return lines;
 }
 
 function TextEditor() {
   const parentRef = useRef();
   const [textEditorContent, setTextEditorContent] = useState('');
   const [cursorLocation, setCursorLocation] = useState(null);
+  const textareaRef = useRef(null);
+
+  const lines = renderLinesAndCursor(textEditorContent, textareaRef);
+  const getLineHeight = () => {
+      const element = parentRef.current ? parentRef.current : document.body;
+      const fspx = window.getComputedStyle(element, null)
+            .getPropertyValue("font-size")
+            .replace('px', '');
+      const fs = 1.25*Math.round(parseFloat(fspx));
+      return fs;
+  };
+  const rowVirtualizer = useVirtual({
+    size: lines.length,
+    parentRef,
+    estimateSize: useCallback(getLineHeight, []),
+  });
 
   function handleChange(e) {
     setTextEditorContent(e.target.value);    
+  }
+
+  function scrollToCursor() {
+    const cursorLine = textareaRef.current
+          ? textEditorContent.substr(0, textareaRef.current.selectionStart)
+          .split('\n')
+          .length
+          : -1;
+    if (textareaRef.current) {
+      rowVirtualizer.scrollToIndex(cursorLine+1);
+    }
   }
 
   function handleSelectionChange(e) {
@@ -59,6 +86,7 @@ function TextEditor() {
       loc.selectionStart = textareaRef.current.selectionStart;
       loc.selectionEnd = textareaRef.current.selectionEnd;
       setCursorLocation(loc);
+      scrollToCursor();
     }
   }
 
@@ -66,23 +94,7 @@ function TextEditor() {
     // console.log("input!", e, e.target);
   }
 
-  const textareaRef = useRef(null);
-
   useEventListener('selectionchange', handleSelectionChange, document);
-
-  const lines = renderLinesAndCursor(textEditorContent, textareaRef);
-  const rowVirtualizer = useVirtual({
-    size: lines.length,
-    parentRef,
-    estimateSize: useCallback(() => {
-      const element = parentRef.current ? parentRef.current : document.body;
-      const fspx = window.getComputedStyle(element, null)
-            .getPropertyValue("font-size")
-            .replace('px', '');
-      const fs = 1.25*Math.round(parseFloat(fspx));
-      return fs;
-    }, []),
-  });
 
   return (
     <div
@@ -105,7 +117,7 @@ function TextEditor() {
       <div
         className='texteditor-content'
         style={{
-          height: `${rowVirtualizer.totalSize}px`,
+          minHeight: `${rowVirtualizer.totalSize}px`,
           width: '100%',
           position: 'relative',
         }}
@@ -113,9 +125,10 @@ function TextEditor() {
         {rowVirtualizer.virtualItems.map(virtualRow => (
           <div
             key={virtualRow.index}
+            ref={virtualRow.measureRef}
             style={{
               position: 'absolute',
-              height: '1em',
+              height: `${getLineHeight()}px`,
               width: 'auto',
               transform: `translateY(${virtualRow.start}px)`,
             }}
