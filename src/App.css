@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
+* {
+    box-sizing: border-box;
+}
+
 .App {
   text-align: center;
 }
@@ -63,24 +67,30 @@ ul li {
   }
 }
 
-.texteditor-2 {
-    width: 0;
-    overflow: hidden;
-    opacity: 0;
+.texteditor {
+    width: 100%;
+    overflow: auto;
+    height: 400px;
+    padding: 1rem;
+    font-size: 12pt;
 }
 
-textarea#editor {
+.texteditor > textarea {
+    white-space: pre;
     overflow: hidden;
     opacity: 0;
     height: 1px;
+    margin-top: -1rem;
+    position: absolute;
+    top: 0;
+    left: 0;
 }
 
-.texteditor-content {
+.texteditor {
     border: 1px solid transparent;
 }
 
-.texteditor:focus + .texteditor-content {
-    border: 1px solid #FFFFFF22;
+.texteditor > textarea:focus + .texteditor-content {
 }
 
 .texteditor-content {
@@ -89,15 +99,18 @@ textarea#editor {
     max-height: 100%;
 }
 
-.texteditor-content div {
+.texteditor-content > div {
     text-align: left;
-    line-height: 1.5em;
-    font-size: 14pt;
+    line-height: 1em;
+    font-size: 1em;
     white-space: pre;
-    min-height: 1.5em;
     border: 0;
-    margin: 0;
-    margin-bottom: -1px;
+    padding: 0;
+    font-family: monospace;
+}
+
+.texteditor-content > div > span {
+    display: inline-block;
 }
 
 .texteditor-cursor {
@@ -107,7 +120,7 @@ textarea#editor {
     margin-right: -1px;
 }
 
-.texteditor:focus + .texteditor-content .texteditor-cursor {
+.texteditor > textarea:focus + .texteditor-content .texteditor-cursor {
     background-color: #FFFFFFFF;
     animation: fadeinout 1s infinite;
     opacity: 1;

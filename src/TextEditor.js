@@ -1,4 +1,5 @@
-import React, {useState, useRef} from 'react';
+import React, {useState, useRef, useCallback} from 'react';
+import {useVirtual} from 'react-virtual';
 import useEventListener from './use-event-listener';
 import './App.css';
 
@@ -40,10 +41,11 @@ function renderLinesAndCursor(content, ref) {
     currentLine.push((<span key={`text-cursor-end`} className="texteditor-cursor">&nbsp;</span>));
   }
   lines.push(currentLine);
-  return lines.map((l, i) => {return (<div key={`line-${i}`}>{l||' '}</div>)});
+  return lines; // .map((l, i) => {return <div>{l||' '}</div>;});
 }
 
 function TextEditor() {
+  const parentRef = useRef();
   const [textEditorContent, setTextEditorContent] = useState('');
   const [cursorLocation, setCursorLocation] = useState(null);
 
@@ -69,22 +71,58 @@ function TextEditor() {
   useEventListener('selectionchange', handleSelectionChange, document);
 
   const lines = renderLinesAndCursor(textEditorContent, textareaRef);
+  const rowVirtualizer = useVirtual({
+    size: lines.length,
+    parentRef,
+    estimateSize: useCallback(() => {
+      const element = parentRef.current ? parentRef.current : document.body;
+      const fspx = window.getComputedStyle(element, null)
+            .getPropertyValue("font-size")
+            .replace('px', '');
+      const fs = 1.25*Math.round(parseFloat(fspx));
+      return fs;
+    }, []),
+  });
 
   return (
-    <div onClick={textareaRef.current ? () => textareaRef.current.focus() : () => {}}>
-      <textarea id="editor"
-                name=""
-                onChange={handleChange}
-                onInput={handleInput}
-                value={textEditorContent}
-                className="texteditor"
-                autoFocus={true}
-                ref={textareaRef}
-                cols="100"
-                wrap="hard">
+    <div
+      ref={parentRef}
+      className="texteditor"
+      onClick={textareaRef.current ? () => textareaRef.current.focus() : () => {}}
+      style={{
+        border: textareaRef.current && textareaRef.current === document.activeElement ?
+          '1px solid #FFFFFF22' : '',
+      }}
+    >
+      <textarea
+        ref={textareaRef}
+        onChange={handleChange}
+        onInput={handleInput}
+        value={textEditorContent}
+        autoFocus={true}
+        wrap="hard">
       </textarea>
-      <div className="texteditor-content">
-        {lines}
+      <div
+        className='texteditor-content'
+        style={{
+          height: `${rowVirtualizer.totalSize}px`,
+          width: '100%',
+          position: 'relative',
+        }}
+      >
+        {rowVirtualizer.virtualItems.map(virtualRow => (
+          <div
+            key={virtualRow.index}
+            style={{
+              position: 'absolute',
+              height: '1em',
+              width: 'auto',
+              transform: `translateY(${virtualRow.start}px)`,
+            }}
+          >
+            {lines[virtualRow.index] || ' '}
+          </div>
+        ))}
       </div>
     </div>
   );
